@@ -1,0 +1,1 @@
+{"packageInfo":{"name":"test","copyright":"copy2024","description":"description test"},"packageVariables":{"destinationPath":"C:\\Users\\m.dirven\\Desktop\\package output test","inputPath":"C:\\Users\\m.dirven\\Desktop\\package test","mainClass":"io.ktor.server.netty.EngineMain","mainJar":"server.jar"}}
