@@ -43,6 +43,7 @@ data class Configuration(
         val mainClass: String? = null,
         val mainJar: String? = null,
         val useConsole: Boolean = false,
+        val fileAssociation: List<FileAssociation> = emptyList(),
 
         // General installer options
         val installAsService: Boolean = false,
@@ -51,5 +52,13 @@ data class Configuration(
         val windowsPerUser: Boolean = false,
         val windowsDirectoryChooser: Boolean = false,
         val windowsShortcut: Boolean = false
+    )
+
+    @Serializable
+    data class FileAssociation(
+        val extension: String,
+        val mimeType: String,
+        val icon: @Contextual File?,
+        val description: String
     )
 }

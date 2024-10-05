@@ -1,4 +1,4 @@
-package nl.mdsystems.ui.screens.components
+package nl.mdsystems.ui.components.table.rows
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*

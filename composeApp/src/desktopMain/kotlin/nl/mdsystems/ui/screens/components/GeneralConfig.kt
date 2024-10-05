@@ -10,7 +10,7 @@ import nl.mdsystems.model.Configuration
 import nl.mdsystems.ui.components.fields.TypedEnumSelectField
 import nl.mdsystems.ui.components.pickers.FilePicker
 import nl.mdsystems.ui.components.pickers.DirectoryPicker
-import nl.mdsystems.util.icoToImageBitmap
+import nl.mdsystems.util.iconToImageBitmap
 import java.io.File
 
 @Composable
@@ -129,7 +129,7 @@ fun GeneralConfig(
         initial = config.packageInfo.icon?.absolutePath,
         label = "Icon file",
         extensions = listOf("ico"),
-        leadingIcon = config.packageInfo.icon?.let { icoToImageBitmap(it) }
+        leadingIcon = config.packageInfo.icon?.let { iconToImageBitmap(it) }
     ){
         onConfigChange(
             config.copy(

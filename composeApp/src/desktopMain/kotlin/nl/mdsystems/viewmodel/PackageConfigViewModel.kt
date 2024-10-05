@@ -3,7 +3,10 @@ package nl.mdsystems.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -11,10 +14,15 @@ import kotlinx.coroutines.launch
 import nl.mdsystems.model.Configuration
 import nl.mdsystems.model.Process
 import java.io.File
+import java.util.Properties
+import java.util.concurrent.ConcurrentSkipListSet
 
 class PackageConfigViewModel : ViewModel() {
     private val _currentProcess = MutableStateFlow(Process())
     val currentProcess = _currentProcess.asStateFlow()
+
+    private val tempDirectory: File = File("temp")
+    private var associationFiles: ConcurrentSkipListSet<File> = ConcurrentSkipListSet()
 
     private fun setStartedState(){
         _currentProcess.update {
@@ -51,6 +59,18 @@ class PackageConfigViewModel : ViewModel() {
             _currentProcess.value.copy(
                 linesRead = _currentProcess.value.linesRead + line
             )
+        }
+    }
+
+    private fun generatePropertiesFile(config: Configuration, association: Configuration.FileAssociation) : File {
+        if(!tempDirectory.exists()) tempDirectory.mkdirs()
+
+        return File(
+            tempDirectory,
+            "${config.packageInfo.name}-${association.extension.removePrefix(".")}-association.properties"
+        ).apply {
+            createNewFile()
+            associationFiles.add(this)
         }
     }
 
@@ -109,6 +129,22 @@ class PackageConfigViewModel : ViewModel() {
         config.packageVariables.additionalContent.forEach { file ->
             add("--app-content")
             add("\"${file.absolutePath}\"")
+        }
+
+        config.packageVariables.fileAssociation.forEach { association ->
+            val propertiesFile = generatePropertiesFile(config, association)
+            Properties().apply {
+                setProperty("extension", association.extension.removePrefix("."))
+                setProperty("mime-type", association.mimeType)
+                setProperty("icon", association.icon?.absolutePath ?: "")
+                setProperty("description", association.description)
+            }.store(
+                propertiesFile.outputStream(),
+                "Temporary file!!!!"
+            )
+
+            add("--file-associations")
+            add("\"${propertiesFile.absolutePath}\"")
         }
     }
 
@@ -188,6 +224,24 @@ class PackageConfigViewModel : ViewModel() {
 
             // Wait for the process to complete
             val exitCode = process.waitFor()
+
+            if (associationFiles.isNotEmpty()){
+                addOutputLine("Cleaning temporary association files")
+                addOutputLine("Total file to clean up: ${associationFiles.count()}")
+                val cleaningJobs: MutableList<Deferred<*>> = mutableListOf()
+                associationFiles.forEach { file ->
+                    addOutputLine("Clean up: ${file.nameWithoutExtension} started")
+                    cleaningJobs.add(
+                        async {
+                            file.delete()
+                            associationFiles.remove(file)
+                        }
+                    )
+                    addOutputLine("clean up ${file.nameWithoutExtension} finished")
+                }
+                cleaningJobs.awaitAll()
+                addOutputLine("Clean up finished")
+            }
 
             if(exitCode > 0)
                 setFinishedWitException()
