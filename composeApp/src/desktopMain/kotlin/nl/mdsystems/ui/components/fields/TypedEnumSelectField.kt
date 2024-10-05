@@ -19,14 +19,15 @@ import androidx.compose.ui.layout.positionInParent
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun <T : Enum<T>> TypedEnumSelectField(
-    initial: T,
+    selected: T?,
     modifier: Modifier = Modifier,
     label: String = "Select",
     options: List<T>,
+    labelSelector: ((T) -> String)? = null,
     onSelectionChange: (T) -> Unit
 ) {
     var dropDownState by remember { mutableStateOf(DropdownMenuState(DropdownMenuState.Status.Closed)) }
-    var selectedOption by remember { mutableStateOf<T?>(initial) }
+    var selectedOption by remember { mutableStateOf<T?>(options.firstOrNull()) }
     var offsetX by remember { mutableStateOf(0f) }
     var offsetY by remember { mutableStateOf(0f) }
 
@@ -43,7 +44,7 @@ fun <T : Enum<T>> TypedEnumSelectField(
                         dropDownState = DropdownMenuState(DropdownMenuState.Status.Open(Offset(offsetX, offsetY)))
                     }
                 },
-            value = selectedOption?.name ?: "",
+            value = selected?.name ?: "",
             trailingIcon = {
                 Icon(
                     imageVector = if(dropDownState.status is DropdownMenuState.Status.Open){
@@ -71,7 +72,7 @@ fun <T : Enum<T>> TypedEnumSelectField(
                         onSelectionChange(option)
                     }
                 ){
-                    Text(text = option.name)
+                    Text(text = labelSelector?.invoke(option) ?: option.name)
                 }
             }
         }

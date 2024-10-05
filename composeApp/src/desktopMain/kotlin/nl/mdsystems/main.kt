@@ -28,6 +28,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import nl.mdsystems.ui.theme.JpackagerTheme
 import nl.mdsystems.util.isProgramInstalled
 
 fun main() = application {
@@ -41,9 +42,6 @@ fun main() = application {
         undecorated = true,
         icon = rememberVectorPainter(Icons.Default.FolderZip)
     ) {
-        var isDragging by remember { mutableStateOf(false) }
-        var dragStartPosition by remember { mutableStateOf(Offset.Zero) }
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -51,34 +49,10 @@ fun main() = application {
                 .border(2.dp, Color.Gray, RoundedCornerShape(8.dp))
                 .shadow(8.dp, RoundedCornerShape(8.dp))
                 .background(Color.LightGray)
-                .pointerInput(Unit) {
-                    forEachGesture {
-                        awaitPointerEventScope {
-                            val down = awaitPointerEvent(PointerEventPass.Initial)
-                            if (down.changes.any { it.pressed }) {
-                                dragStartPosition = down.changes.first().position
-                                isDragging = true
-                            }
-
-                            while (isDragging) {
-                                val event = awaitPointerEvent(PointerEventPass.Main)
-                                if (event.changes.any { it.pressed }) {
-                                    val currentPosition = event.changes.first().position
-                                    val offset = currentPosition - dragStartPosition
-                                    this@Window.window.setLocation(
-                                        (this@Window.window.x + offset.x).toInt(),
-                                        (this@Window.window.y + offset.y).toInt()
-                                    )
-                                } else {
-                                    isDragging = false
-                                }
-                            }
-                        }
-                    }
-                }
         ) {
-            MaterialTheme {
+            JpackagerTheme {
                 App(
+                    this@Window,
                     modifier = Modifier,
                     onExit = ::exitApplication
                 )

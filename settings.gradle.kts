@@ -1,4 +1,5 @@
 rootProject.name = "jpackager"
+
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {

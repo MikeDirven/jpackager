@@ -8,8 +8,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import nl.mdsystems.model.PackageConfig
+import nl.mdsystems.model.Configuration
 import nl.mdsystems.model.Process
+import java.io.File
 
 class PackageConfigViewModel : ViewModel() {
     private val _currentProcess = MutableStateFlow(Process())
@@ -53,65 +54,121 @@ class PackageConfigViewModel : ViewModel() {
         }
     }
 
-    private fun PackageConfig.createCommand() : List<String> {
-        return buildList {
-            add("jpackage")
-            packageInfo.name.takeIf { it.isNotBlank() }?.let {
-                add("--name")
-                add(it)
-            }
+    private fun MutableList<String>.setGeneralConfiguration(config: Configuration) {
+        // Start of general configuration
+        add("jpackage")
 
-            add("--type")
-            add(packageInfo.type.name.lowercase())
+        config.packageInfo.name.takeIf { it.isNotBlank() }?.let {
+            add("--name")
+            add(it)
+        }
 
-            add("--app-version")
-            add(packageInfo.appVersion)
+        add("--type")
+        add(config.packageInfo.type.name.lowercase())
 
-            packageInfo.icon.takeIf { it.isNotBlank() }?.let {
-                add("--icon")
-                add(it)
-            }
+        add("--app-version")
+        add(config.packageInfo.appVersion)
 
-            add("--description")
-            add(packageInfo.description)
+        config.packageInfo.icon?.absolutePath?.let {
+            add("--icon")
+            add("\"$it\"")
+        }
 
-            add("--copyright")
-            add(packageInfo.copyright)
+        add("--description")
+        add(config.packageInfo.description)
 
-            packageVariables.inputPath?.absolutePath?.let {
-                add("--input")
-                add(it)
-            }
+        add("--vendor")
+        add(config.packageInfo.vendor)
 
-            packageVariables.destinationPath?.absolutePath?.let {
-                add("--dest")
-                add(it)
-            }
+        add("--copyright")
+        add(config.packageInfo.copyright)
 
-            packageVariables.mainJar?.let {
-                add("--main-jar")
-                add(it)
-            }
+        config.packageVariables.destinationPath?.absolutePath?.let {
+            add("--dest")
+            add("\"$it\"")
+        }
 
-            packageVariables.mainClass?.let {
-                add("--main-class")
-                add(it)
-            }
+        config.packageInfo.upgradeCode?.let {
+            add("--win-upgrade-uuid")
+            add(it)
+        }
+        // End of general configuration
+    }
 
-            packageVariables.commandLineArgument?.let {
-                add("--arguments")
-                add(it)
-            }
+    private fun MutableList<String>.setPackageConfiguration(config: Configuration) {
+        config.packageVariables.inputPath?.absolutePath?.let {
+            add("--input")
+            add("\"$it\"")
+        }
 
-            if(packageVariables.useConsole) add("--win-console")
+        config.packageVariables.aboutUrl?.let {
+            add("--about-url")
+            add("\"$it\"")
+        }
 
-            if(packageVariables.perUser) add("--win-per-user-install")
-
-            add("--verbose")
+        config.packageVariables.additionalContent.forEach { file ->
+            add("--app-content")
+            add("\"${file.absolutePath}\"")
         }
     }
 
-    fun startProcess(config: PackageConfig){
+    private fun MutableList<String>.setLauncherConfiguration(config: Configuration) {
+        config.packageVariables.mainJar?.let {
+            add("--main-jar")
+            add(it)
+        }
+
+        config.packageVariables.mainClass?.let {
+            add("--main-class")
+            add(it)
+        }
+
+        config.packageVariables.commandLineArgument?.let {
+            add("--arguments")
+            add(it)
+        }
+
+        config.packageVariables.jvmOptions.forEach {
+            add("--java-options")
+            add("${it.key} ${it.value}")
+        }
+
+        if(config.packageVariables.useConsole) add("--win-console")
+    }
+
+    private fun MutableList<String>.setInstallerOptions(config: Configuration) {
+        // Start of Windows installer options
+        if(config.packageVariables.windowsPerUser) add("--win-per-user-install")
+        if(config.packageVariables.windowsDirectoryChooser) add("--win-dir-chooser")
+        if(config.packageVariables.windowsShortcut) add("--win-shortcut")
+        if(config.packageVariables.installAsService) {
+            add("--resource-dir")
+            add(File("utils").absolutePath)
+            add("--launcher-as-service")
+        }
+    }
+
+    private fun Configuration.createCommand() : List<String> {
+        return buildList {
+            setGeneralConfiguration(this@createCommand)
+
+            setPackageConfiguration(this@createCommand)
+
+            setLauncherConfiguration((this@createCommand))
+
+            setInstallerOptions(this@createCommand)
+
+            if(verboseLogging) add("--verbose")
+        }
+    }
+
+    fun clearConsole() {
+        _currentProcess.update {
+            _currentProcess.value.copy(linesRead = listOf())
+        }
+    }
+
+    fun startProcess(config: Configuration, setProductCode: (String) -> Unit, setUpgradeCode: (String) -> Unit){
         setStartedState()
         viewModelScope.launch(CoroutineScope(Dispatchers.IO).coroutineContext) {
             val process = ProcessBuilder(config.createCommand()).apply {
@@ -122,6 +179,10 @@ class PackageConfigViewModel : ViewModel() {
 
             // Read output line by line
             reader.forEachLine { line ->
+                when{
+                    line.contains("ProductCode:") -> setProductCode(line.substringAfterLast(" ").removeSuffix("."))
+                    line.contains("UpgradeCode:") -> setUpgradeCode(line.substringAfterLast(" ").removeSuffix("."))
+                }
                 addOutputLine(line)
             }
 

@@ -4,15 +4,15 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.FrameWindowScope
 import com.darkrockstudios.libraries.mpfilepicker.DirectoryPicker
 
 @Composable
-fun FolderPicker(
+fun DirectoryPicker(
     modifier: Modifier = Modifier,
     initial: String?,
     label: String = "Select folder",
@@ -38,7 +38,7 @@ fun FolderPicker(
             singleLine = true,
             trailingIcon = {
                 Button(
-                    modifier = Modifier.height(IntrinsicSize.Max).padding(end = 5.dp),
+                    modifier = Modifier.height(IntrinsicSize.Max).padding(end = 5.dp).pointerHoverIcon(PointerIcon.Hand),
                     onClick = { showPicker = true }
                 ){
                     Text(text = "Select Folder")

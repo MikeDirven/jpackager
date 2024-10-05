@@ -11,6 +11,7 @@ project.group = "nl.mdsystems"
 project.version = "1.0.0"
 
 kotlin {
+    jvmToolchain(21)
     jvm("desktop")
     
     sourceSets {
@@ -32,7 +33,9 @@ kotlin {
             implementation(libs.kotlinx.coroutines.swing)
             implementation(libs.compose.multiplatform.file.picker)
             implementation(libs.compose.material.icons)
+            implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
             implementation(libs.kotlin.serialization.json)
+            implementation(libs.imageio.ico.plugin)
         }
     }
 }
@@ -41,6 +44,7 @@ kotlin {
 compose.desktop {
     application {
         mainClass = "nl.mdsystems.MainKt"
+
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
