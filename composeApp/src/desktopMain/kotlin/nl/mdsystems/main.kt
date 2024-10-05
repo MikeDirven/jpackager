@@ -30,14 +30,15 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import nl.mdsystems.ui.theme.JpackagerTheme
 import nl.mdsystems.util.isProgramInstalled
+import java.io.File
 
-fun main() = application {
+fun main(args: Array<String>) = application {
     Window(
         onCloseRequest = ::exitApplication,
         state = rememberWindowState(
             size = DpSize(1000.dp, 800.dp)
         ),
-        title = "jpackager",
+        title = "Jpackager",
         transparent = true,
         undecorated = true,
         icon = rememberVectorPainter(Icons.Default.FolderZip)
@@ -54,6 +55,7 @@ fun main() = application {
                 App(
                     this@Window,
                     modifier = Modifier,
+                    argumentFile = args.firstOrNull()?.let { File(it) },
                     onExit = ::exitApplication
                 )
             }

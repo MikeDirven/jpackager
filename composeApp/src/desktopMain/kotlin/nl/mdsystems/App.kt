@@ -31,6 +31,7 @@ import nl.mdsystems.model.Configuration
 import nl.mdsystems.ui.components.fields.CheckBox
 import nl.mdsystems.ui.components.fields.ProcessOutputField
 import nl.mdsystems.ui.components.overlays.LoadingOverlayWithMessage
+import nl.mdsystems.ui.components.snackbars.FileExceptionSnackbar
 import nl.mdsystems.ui.components.snackbars.WixToolsetSnackbar
 import nl.mdsystems.ui.screens.configurationScreen
 import nl.mdsystems.util.Serializer
@@ -47,10 +48,12 @@ fun App(
     windowScope: FrameWindowScope,
     modifier: Modifier = Modifier,
     onExit: () -> Unit = {},
+    argumentFile: File? = null,
     viewModel: PackageConfigViewModel = viewModel { PackageConfigViewModel()}
 ) {
     var isDragging by remember { mutableStateOf(false) }
     var dragStartPosition by remember { mutableStateOf(Offset.Zero) }
+    var fileException by remember { mutableStateOf<File?>(null) }
     var checkedForWixToolset by remember { mutableStateOf(false) }
     var wixToolsetAvailable by remember { mutableStateOf(false) }
     var checkedForNssm by remember { mutableStateOf(false) }
@@ -110,6 +113,15 @@ fun App(
                     }
                 }
             }
+        }
+    }
+
+    LaunchedEffect(Unit){
+        argumentFile?.let {
+            if (argumentFile.isDirectory) fileException = argumentFile
+            configurationState = Serializer().decodeFromString(
+                File(argumentFile.path).readText()
+            )
         }
     }
 
@@ -304,7 +316,9 @@ fun App(
         Surface(
             modifier = modifier.padding(innerPadding)
         ) {
-            Column {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 configurationScreen(
                     modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
                     packageConfig = configurationState
@@ -327,6 +341,13 @@ fun App(
                         callBack = {
                             wixToolsetAvailable = it
                         }
+                    )
+                }
+
+                fileException?.let {
+                    FileExceptionSnackbar(
+                        file = it,
+                        onClose = { fileException= null }
                     )
                 }
             }
