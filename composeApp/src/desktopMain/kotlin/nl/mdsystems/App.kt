@@ -26,20 +26,20 @@ import com.darkrockstudios.libraries.mpfilepicker.DirectoryPicker
 import com.darkrockstudios.libraries.mpfilepicker.FilePicker
 import kotlinx.coroutines.*
 import kotlinx.serialization.encodeToString
+import nl.mdsystems.domain.enums.ConfigurationSteps
 import nl.mdsystems.domain.utils.os.Os
 import nl.mdsystems.model.Configuration
 import nl.mdsystems.ui.components.fields.CheckBox
 import nl.mdsystems.ui.components.fields.ProcessOutputField
-import nl.mdsystems.ui.components.overlays.LoadingOverlayWithMessage
 import nl.mdsystems.ui.components.snackbars.FileExceptionSnackbar
 import nl.mdsystems.ui.components.snackbars.WixToolsetSnackbar
 import nl.mdsystems.ui.screens.configurationScreen
 import nl.mdsystems.util.Serializer
+import nl.mdsystems.util.isEnabled
 import nl.mdsystems.util.isProgramInstalled
 import nl.mdsystems.viewmodel.PackageConfigViewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import java.io.File
-import java.io.FileOutputStream
 
 
 @Composable
@@ -54,6 +54,7 @@ fun App(
     var isDragging by remember { mutableStateOf(false) }
     var dragStartPosition by remember { mutableStateOf(Offset.Zero) }
     var fileException by remember { mutableStateOf<File?>(null) }
+    var currentStep by remember { mutableStateOf(ConfigurationSteps.GENERAL) }
     var checkedForWixToolset by remember { mutableStateOf(false) }
     var wixToolsetAvailable by remember { mutableStateOf(false) }
     var checkedForNssm by remember { mutableStateOf(false) }
@@ -64,6 +65,10 @@ fun App(
     val processScrollState = rememberScrollState()
     var showSavePicker by remember { mutableStateOf(false) }
     var showLoadPicker by remember { mutableStateOf(false) }
+
+    fun currentTabStillAvailable() : Boolean {
+        return currentStep.packageTypes.contains(configurationState.packageInfo.type)
+    }
 
     LaunchedEffect(Unit) {
         processScrollState.scrollTo(processScrollState.maxValue)
@@ -319,8 +324,25 @@ fun App(
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                TabRow(
+                    selectedTabIndex = if(currentTabStillAvailable()) currentStep.ordinal else ConfigurationSteps.GENERAL.ordinal
+                ){
+                    ConfigurationSteps.entries.forEach {
+                        Tab(
+                            modifier = Modifier.pointerHoverIcon(
+                                if(it.isEnabled(configurationState)) PointerIcon.Hand else PointerIcon.Default
+                            ),
+                            enabled = it.isEnabled(configurationState),
+                            text = { Text(it.label) },
+                            selected = it == currentStep,
+                            onClick = { currentStep = it }
+                        )
+                    }
+                }
+
                 configurationScreen(
                     modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
+                    activeStep = currentStep,
                     packageConfig = configurationState
                 ) {
                     configurationState = it

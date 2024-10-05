@@ -1,16 +1,13 @@
 package nl.mdsystems.ui.components.buttons
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.unit.dp
-import java.io.File
-import com.darkrockstudios.libraries.mpfilepicker.FilePicker as ComposeFilePicker
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import java.io.File
+import com.darkrockstudios.libraries.mpfilepicker.FilePicker as ComposeFilePicker
 
 @Composable
 fun FilePickerButton(
@@ -34,7 +31,7 @@ fun FilePickerButton(
     }
 
     Button(
-        modifier = modifier.height(IntrinsicSize.Max).padding(end = 5.dp).pointerHoverIcon(PointerIcon.Hand),
+        modifier = modifier.pointerHoverIcon(PointerIcon.Hand),
         onClick = { showPicker = true }
     ) {
         Text(text = label)

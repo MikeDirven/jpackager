@@ -1,4 +1,4 @@
-package nl.mdsystems.ui.screens.components
+package nl.mdsystems.ui.components.table.headers
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Divider
@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun AdditionalContentFilesHeader(
+fun FileAssociationsHeader(
     modifier: Modifier = Modifier
 ){
     Row(
@@ -19,16 +19,16 @@ fun AdditionalContentFilesHeader(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            modifier = Modifier.width(400.dp),
-            text = "File name",
+            modifier = Modifier.width(100.dp),
+            text = "Icon",
             style = MaterialTheme.typography.h6
         )
 
         Spacer(modifier = Modifier.width(8.dp))
 
         Text(
-            modifier = Modifier.width(100.dp),
-            text = "Type",
+            modifier = Modifier.width(150.dp),
+            text = "Extension",
             style = MaterialTheme.typography.h6
         )
 
@@ -36,15 +36,15 @@ fun AdditionalContentFilesHeader(
 
         Text(
             modifier = Modifier.width(200.dp),
-            text = "File amount",
+            text = "Mime type",
             style = MaterialTheme.typography.h6
         )
 
         Spacer(modifier = Modifier.width(8.dp))
 
         Text(
-            modifier = Modifier.width(100.dp),
-            text = "Size",
+            modifier = Modifier.width(400.dp),
+            text = "Description",
             style = MaterialTheme.typography.h6
         )
 

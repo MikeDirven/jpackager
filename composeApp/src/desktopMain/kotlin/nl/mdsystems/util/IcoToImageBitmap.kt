@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.toComposeImageBitmap
 import java.io.File
 import javax.imageio.ImageIO
 
-fun icoToImageBitmap(file: File): ImageBitmap? = try {
+fun iconToImageBitmap(file: File): ImageBitmap? = try {
     var returnImage: ImageBitmap? = null
     ImageIO.scanForPlugins()
     val imageInputStream = ImageIO.createImageInputStream(file)
