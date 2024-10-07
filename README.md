@@ -1,3 +1,7 @@
+![Static Badge](https://img.shields.io/badge/Jdk%20version-21-orange) ![Static Badge](https://img.shields.io/badge/Kotlin%20version-2.0.20-blue) ![Static Badge](https://img.shields.io/badge/Compose%20multiplatform-1.6.11-blue)
+
+
+
 ### Graphical interface for Jpackage
 
 
